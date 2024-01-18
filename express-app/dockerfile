@@ -1,0 +1,30 @@
+# pull lts official node image
+FROM node:18.17.0-alpine3.18
+
+# set work directory
+WORKDIR /app
+
+#cache dependencies and install
+COPY package*.json ./
+RUN ["npm", "ci"] 
+
+#cache copying of entrypoint.sh layer
+COPY ./entrypoint.sh .
+
+#copy the rest of the files
+COPY . .
+
+#install vim
+RUN ["apk", "update"]
+RUN ["apk", "add", "vim"]
+
+# modify file permissions 
+RUN ["chmod", "+x", "/app/entrypoint.sh"]
+
+#run entrypoint.sh: handles migration and server deployment
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+
+
+
+

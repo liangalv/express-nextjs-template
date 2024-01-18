@@ -1,0 +1,20 @@
+# pull lts official node image
+FROM node:18.17.0-alpine3.18
+
+WORKDIR /app
+
+#cache dependencies and install
+# COPY package*.json ./
+
+#copy the rest of the files
+COPY . .
+RUN ["npm", "ci"] 
+
+#install vim
+RUN ["apk", "update"]
+RUN ["apk", "add", "vim"]
+
+
+RUN npm run build 
+
+CMD npm run dev 

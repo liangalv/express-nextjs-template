@@ -1,0 +1,12 @@
+
+const pinoOptions = {
+    transport:{
+        target: 'pino-pretty',
+        options:{
+            translateTime: "SYS:mm-dd-yyyy HH:MM:ss",
+            ignore :"pid,hostname",
+        }
+    }
+};
+
+export default pinoOptions;

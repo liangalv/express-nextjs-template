@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  frontend:
+    build: ./ts-frontend
+    container_name: ts-frontend
+    ports:
+      - 3000:3000
+    env_file:
+      - ./.env.dev
+    volumes:
+      - ./ts-frontend:/app/
+      - ts-frontend-node-modules:/app/node_modules
+  express-app:
+    build: ./express-app
+    container_name: express-server
+    volumes:
+      - ./express-app:/app/
+      - express-node-modules:/app/node_modules
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+  db:
+    image: postgres:12.0-alpine
+    container_name: postgres12_template_database
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env.db
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+volumes:
+  postgres_data:
+  express-node-modules:
+  ts-frontend-node-modules:
