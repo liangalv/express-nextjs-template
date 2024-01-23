@@ -1,6 +1,11 @@
 const User = require('./user.cjs');
 const RefreshToken = require('./refreshtoken.cjs');
 const Sequelize = require('sequelize');
+const cls = require('cls-hooked')
+
+//setup cls namespace, enabling transactions
+const namespace = cls.createNamespace('transactions');
+Sequelize.useCLS(namespace);
 
 //Generate Sequelize Singleton
 const sequelizeSingleton = new Sequelize(process.env.SEQUELIZE_URI, {
@@ -19,6 +24,6 @@ refreshToken.associate({user})
 module.exports = {
    user,
    refreshToken,
-   sequelizeSingleton
+   sequelize: sequelizeSingleton
 };
 

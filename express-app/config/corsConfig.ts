@@ -1,6 +1,7 @@
 
 //Cors whitelist
 const whitelist = process.env.WHITELIST.split(',').map(str => str.trim());
+console.log(whitelist);
 var corsOptions = {
   origin: (origin, callback) =>{
     if(whitelist.indexOf(origin) !== -1){

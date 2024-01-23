@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken';
-import {user, refreshToken} from '../db/models/index.cjs';
+import {user, refreshToken, sequelize} from '../db/models/index.cjs';
 import bcrypt from 'bcrypt';
 
 const handleLogin = (async(req,res,next)=>{
     //When the req body comes in it should come with a password and username
     const body = req.body
-    console.log(body);
     try{
+        await sequelize.transaction(async () =>{
         //attempt to find existing user
         const currUser = await user.findOne({where: {username: body.username}});
         if (!currUser)throw new Error();
@@ -24,6 +24,7 @@ const handleLogin = (async(req,res,next)=>{
         //put these in when you convert to serving via https sameSite: 'none', secure: true
         res.cookie('jwt', rToken, {httpOnly: true, maxAge:24*60*60*1000})
         res.json({userFields, accessToken: aToken })
+    })
     }catch(error){
         res.status(401).send("Unauthorized access")
         next(error);
@@ -32,16 +33,18 @@ const handleLogin = (async(req,res,next)=>{
 
 //with axios you need to set a with-credential flag that needs to be set as well
 const handleLogout = async(req,res) =>{
-    //On the client also make sure to delete the accessToken
-    //clearCookies: make sure to re-add sameSite: none and secure: true
-    res.clearCookie('jwt', {httpOnly: true})//secure to send only over https
-    //get refreshToken and destroy it
-        //we need this deconstructed as optional chaining does not wait for the promise to resolve
-    const currUser = await user.findOne({where: {username: req.body.username}});
-    const rt = await currUser.getRefreshToken();
-    rt.destroy();
-    //you can handle the logout screen on the frontend side
-    return res.sendStatus(204);
+    sequelize.transaction(async() =>{
+        //On the client also make sure to delete the accessToken
+        //clearCookies: make sure to re-add sameSite: none and secure: true
+        res.clearCookie('jwt', {httpOnly: true})//secure to send only over https
+        //get refreshToken and destroy it
+            //we need this deconstructed as optional chaining does not wait for the promise to resolve
+        const currUser = await user.findOne({where: {username: req.body.username}});
+        const rt = await currUser.getRefreshToken();
+        await rt.destroy();
+        //you can handle the logout screen on the frontend side
+        return res.sendStatus(204);
+    })
 };
 
 const reissueAccessToken = async (req,res) =>{
